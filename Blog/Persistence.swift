@@ -14,8 +14,8 @@ struct PersistenceController {
         let result = PersistenceController(inMemory: true)
         let viewContext = result.container.viewContext
         for _ in 0..<10 {
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
+            let newItem = Post(context: viewContext)
+//            newItem.timestamp = Date()
         }
         do {
             try viewContext.save()
@@ -36,6 +36,9 @@ struct PersistenceController {
             container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
         }
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
+            
+            print(storeDescription.url)
+            
             if let error = error as NSError? {
                 // Replace this implementation with code to handle the error appropriately.
                 // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
@@ -51,5 +54,54 @@ struct PersistenceController {
                 fatalError("Unresolved error \(error), \(error.userInfo)")
             }
         })
+    }
+    
+    // MARK - getAllPosts
+    func getAllPosts() ->[Post] {
+        var posts = [Post]()
+        
+        let request: NSFetchRequest<Post> = Post.fetchRequest()
+        do{
+            posts = try PersistenceController.shared.container.viewContext.fetch(request)
+        } catch let error as NSError {
+            print(error.localizedDescription)
+        }
+        
+        return posts
+    }
+    
+    func savePost(post: Post) throws {
+        self.container.viewContext.insert(post)
+        try save()
+    }
+    
+    func getByPostId(postId: UUID) throws -> Post? {
+        let request: NSFetchRequest<Post> = Post.fetchRequest()
+        request.predicate = NSPredicate(format: "postId = %@", (postId.uuidString))
+        
+        let results = try self.container.viewContext.fetch(request)
+        
+        return results.first
+    }
+    
+    func updatePost(postId: String, title:String, body:String) throws {
+        
+        let postToBeUpdated = try getByPostId(postId: UUID(uuidString: postId)!)
+        
+        if let postToBeUpdated = postToBeUpdated {
+            postToBeUpdated.title = title
+            postToBeUpdated.body = body
+            
+            try save()
+        }
+    }
+    
+    private func save() throws {
+        try self.container.viewContext.save()
+    }
+    
+    func deletePost(post: Post) throws {
+        self.container.viewContext.delete(post)
+        try save()
     }
 }
