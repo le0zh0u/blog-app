@@ -15,6 +15,11 @@ struct PersistenceController {
         let viewContext = result.container.viewContext
         for _ in 0..<10 {
             let newItem = Post(context: viewContext)
+            newItem.title = "title"
+            newItem.body = "body"
+            newItem.isPublished = true
+            newItem.postId = UUID()
+            newItem.priority = 0
 //            newItem.timestamp = Date()
         }
         do {
@@ -61,6 +66,8 @@ struct PersistenceController {
         var posts = [Post]()
         
         let request: NSFetchRequest<Post> = Post.fetchRequest()
+        let sortDescriptor = NSSortDescriptor(key: "priority", ascending: true)
+        request.sortDescriptors = [sortDescriptor]
         do{
             posts = try PersistenceController.shared.container.viewContext.fetch(request)
         } catch let error as NSError {
@@ -91,6 +98,16 @@ struct PersistenceController {
         if let postToBeUpdated = postToBeUpdated {
             postToBeUpdated.title = title
             postToBeUpdated.body = body
+            
+            try save()
+        }
+    }
+    
+    func updatePostPriority(postId: String, priority: Int16) throws {
+        let postToBeUpdated = try getByPostId(postId: UUID(uuidString: postId)!)
+        
+        if let postToBeUpdated = postToBeUpdated {
+            postToBeUpdated.priority = priority
             
             try save()
         }

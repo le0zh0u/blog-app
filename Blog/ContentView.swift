@@ -20,36 +20,37 @@ struct ContentView: View {
     @State private var isPresented: Bool = false
     
     var body: some View {
-        
-        VStack {
-            List{
-                ForEach(postListVM.posts, id: \.postId){ post in
-                    NavigationLink(
-                        destination: PostDetailView(post: post),
-                        label: {
-                            Text(post.title)
-                        })
+            VStack {
+                List{
+                    ForEach(postListVM.posts, id: \.postId){ post in
+                        NavigationLink(
+                            destination: PostDetailView(post: post),
+                            label: {
+                                Text("\(post.title) - \(post.priority)")
+                            })
+                    }
+                    .onDelete(perform: { indexSet in
+                        self.deleetPost(at: indexSet)
+                    })
+                    .onMove(perform: movePost)
+                    .listRowBackground(Color.white)
                 }
-                .onDelete(perform: { indexSet in
-                    self.deleetPost(at: indexSet)
-                })
                 
+                .onAppear(){
+                    self.postListVM.fetchAllPosts()
+                }
+                .sheet(isPresented: $isPresented, onDismiss: {
+                    self.postListVM.fetchAllPosts()
+                }, content: {
+                    let addPostVM = AddPostViewModel(maxPriority:Int16(self.postListVM.maxPriority))
+                    AddPostView(addPostVM: addPostVM)
+                })
             }
-            
-            .onAppear(){
-                self.postListVM.fetchAllPosts()
-            }
-            .sheet(isPresented: $isPresented, onDismiss: {
-                self.postListVM.fetchAllPosts()
-            }, content: {
-                AddPostView()
+//            .navigationBarTitle("Posts")
+            .navigationBarItems(leading: EditButton(), trailing: Button("Add Post"){
+                self.isPresented = true
             })
-        }
-        .navigationTitle("Posts")
-        .navigationBarItems(trailing: Button("Add Post"){
-            self.isPresented = true
-        })
-        .embedInNavigationView()
+            .embedInNavigationView()
         
     }
     
@@ -78,6 +79,20 @@ struct ContentView: View {
         }
         
         if deleted {
+            postListVM.fetchAllPosts()
+        }
+        
+    }
+    
+    private func movePost(indexSet: IndexSet, destination: Int){
+        let source = indexSet.first!
+        
+        if source == destination {
+            return
+        }
+        
+        let moved = postListVM.movePost(source: source, destination: destination)
+        if moved {
             postListVM.fetchAllPosts()
         }
         
