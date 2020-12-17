@@ -99,6 +99,7 @@ struct PostPriorityState {
     var priority : Int16 = 0
 }
 
+
 class PostViewModel {
     var post: Post
     

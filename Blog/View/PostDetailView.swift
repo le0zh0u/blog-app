@@ -18,8 +18,10 @@ struct PostDetailView: View {
     
     var body: some View {
         VStack {
-            TextField(post.title, text: $postViewState.title)
-            TextField(post.body, text: $postViewState.body)
+            VStack{
+                TextField(post.title, text: $postViewState.title)
+                TextField(post.body, text: $postViewState.body)
+            }.padding()
             
             Button("Update") {
                 self.postViewState.postId = self.post.postId
