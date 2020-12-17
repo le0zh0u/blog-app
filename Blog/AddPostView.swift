@@ -18,16 +18,28 @@ struct AddPostView: View {
     
     var body: some View {
         VStack{
-//            Text("MaxPriority: \(addPostVM.maxPriority)")
-            TextField("Title", text: $addPostVM.postTitle)
-            TextField("Body", text: $addPostVM.postBody)
-            Button("Save"){
-                let saved = self.addPostVM.savePost()
-                if saved {
+            HStack{
+                Spacer()
+                Button(action: {
                     self.presentationMode.wrappedValue.dismiss()
-                }
+                }, label: {
+                    Image(systemName: "xmark.circle")
+                }).padding()
             }
-        }.padding()
+            VStack{
+    //            Text("MaxPriority: \(addPostVM.maxPriority)")
+                TextField("Title", text: $addPostVM.postTitle)
+                TextField("Body", text: $addPostVM.postBody)
+                Button("Save"){
+                    let saved = self.addPostVM.savePost()
+                    if saved {
+                        self.presentationMode.wrappedValue.dismiss()
+                    }
+                }
+            }.padding()
+            Spacer()
+        }
+        
     }
 }
 

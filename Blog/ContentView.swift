@@ -18,6 +18,7 @@ struct ContentView: View {
     
     @ObservedObject private var postListVM = PostListViewModel()
     @State private var isPresented: Bool = false
+    @State private var editMode = EditMode.inactive
     
     var body: some View {
             VStack {
@@ -35,7 +36,6 @@ struct ContentView: View {
                     .onMove(perform: movePost)
                     .listRowBackground(Color.white)
                 }
-                
                 .onAppear(){
                     self.postListVM.fetchAllPosts()
                 }
@@ -46,12 +46,24 @@ struct ContentView: View {
                     AddPostView(addPostVM: addPostVM)
                 })
             }
-//            .navigationBarTitle("Posts")
-            .navigationBarItems(leading: EditButton(), trailing: Button("Add Post"){
-                self.isPresented = true
-            })
+            .navigationBarTitle("Posts")
+            .navigationBarItems(leading: EditButton(), trailing: addButton)
+            .environment(\.editMode, $editMode)
             .embedInNavigationView()
         
+    }
+    
+    private var addButton: some View{
+        switch editMode {
+        case .inactive:
+            return AnyView(Button(action: {
+                self.isPresented = true
+            }, label: {
+                Image(systemName: "plus")
+            }))
+        default:
+            return AnyView(EmptyView())
+        }
     }
     
     //    private func addItem() {
@@ -70,6 +82,7 @@ struct ContentView: View {
     //        }
     //    }
     //
+    
     private func deleetPost(at indexSet: IndexSet) {
         var deleted = false
         
